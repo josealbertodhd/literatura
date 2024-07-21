@@ -1,7 +1,8 @@
 package com.aluracursos.literatura.Literatura.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "Autores")
@@ -9,9 +10,10 @@ public class Autor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String nombre;
-    private String fechaDeNacimiento;
-    private String fechaDeFallecimiento;
+    private LocalDate fechaDeNacimiento;
+    private LocalDate fechaDeFallecimiento;
     @ManyToOne
     private Libro libro;
 
@@ -20,8 +22,8 @@ public class Autor {
 
     public Autor(DatosAutor datosAutor){
         this.nombre = datosAutor.nombre();
-        this.fechaDeNacimiento = datosAutor.fechaDeNacimiento();
-        this.fechaDeFallecimiento = datosAutor.fechaDeFallecimiento();
+        this.fechaDeNacimiento = LocalDate.of(datosAutor.fechaDeNacimiento(), 1, 1);
+        this.fechaDeFallecimiento = LocalDate.of(datosAutor.fechaDeFallecimiento(), 1, 1);
     }
 
     public Long getId() {
@@ -36,26 +38,6 @@ public class Autor {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getFechaDeNacimiento() {
-        return fechaDeNacimiento;
-    }
-
-    public void setFechaDeNacimiento(String fechaDeNacimiento) {
-        this.fechaDeNacimiento = fechaDeNacimiento;
-    }
-
-    public String getFechaDeFallecimiento() {
-        return fechaDeFallecimiento;
-    }
-
-    public void setFechaDeFallecimiento(String fechaDeFallecimiento) {
-        this.fechaDeFallecimiento = fechaDeFallecimiento;
-    }
-
     public Libro getLibro() {
         return libro;
     }
@@ -66,9 +48,9 @@ public class Autor {
 
     @Override
     public String toString() {
-        return
-                "nombre='" + nombre + '\'' +
-                ", fechaDeNacimiento='" + fechaDeNacimiento + '\'' +
-                ", fechaDeFallecimiento='" + fechaDeFallecimiento ;
+        return  "\n------------------------\n" +
+                "Nombre: " + nombre  +
+                "\nFecha de Nacimiento: " + fechaDeNacimiento + '\'' +
+                "\nFecha de Fallecimiento: " + fechaDeFallecimiento ;
     }
 }

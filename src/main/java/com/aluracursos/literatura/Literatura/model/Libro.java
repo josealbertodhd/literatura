@@ -13,8 +13,8 @@ public class Libro {
     private Long id;
     @Column(unique = true)
     private String titulo;
-    @OneToMany
-    private List<DatosAutor> autores;
+    @OneToMany(mappedBy = "libro", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Autor> autores;
     private String idioma;
     private Long numeroDeDescargas;
 
@@ -23,7 +23,6 @@ public class Libro {
 
     public Libro(DatosLibro datosLibro){
         this.titulo = datosLibro.titulo();
-        this.autores = datosLibro.autores();
         this.idioma = datosLibro.idiomas().get(0);
         this.numeroDeDescargas = datosLibro.numeroDeDescargas();
     }
@@ -44,11 +43,12 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public List<DatosAutor> getAutores() {
+    public List<Autor> getAutores() {
         return autores;
     }
 
-    public void setAutores(List<DatosAutor> autores) {
+    public void setAutores(List<Autor> autores) {
+        autores.forEach( a -> a.setLibro(this));
         this.autores = autores;
     }
 
@@ -70,11 +70,11 @@ public class Libro {
 
     @Override
     public String toString() {
-        return
-                "  id=" + id +
-                ", titulo='" + titulo + '\'' +
-                ", autores=" + autores +
-                ", idioma='" + idioma + '\'' +
-                ", numeroDeDescargas=" + numeroDeDescargas;
+        return  "\n-------- Libro---------\n"+
+                "ID: " + id +
+                "\nTitulo: " + titulo +
+                "\n-------- Autores ------\n " + autores +
+                "\nIdioma: '" + idioma + '\'' +
+                "\nNumero de Descargas: " + numeroDeDescargas + "\n";
     }
 }

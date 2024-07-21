@@ -1,17 +1,32 @@
 package com.aluracursos.literatura.Literatura.principal;
 
 import com.aluracursos.literatura.Literatura.dto.DatosApi;
+import com.aluracursos.literatura.Literatura.model.Autor;
+import com.aluracursos.literatura.Literatura.model.DatosLibro;
+import com.aluracursos.literatura.Literatura.model.Libro;
+import com.aluracursos.literatura.Literatura.repository.AutorRepository;
+import com.aluracursos.literatura.Literatura.repository.LibroRepository;
 import com.aluracursos.literatura.Literatura.services.ConsumoAPI;
 import com.aluracursos.literatura.Literatura.services.ConvierteDatos;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private ConsumoAPI consumoAPI = new ConsumoAPI();
     private final String URL_BASE = "https://gutendex.com/books/";
     private ConvierteDatos convierteDatos = new ConvierteDatos();
+    private LibroRepository repositorio;
+    private AutorRepository autorRepository;
+
+    public Principal(LibroRepository libroRepository, AutorRepository autorRepository){
+        this.repositorio = libroRepository;
+        this.autorRepository = autorRepository;
+    }
 
     public void muestraElMenu(){
         int opcion = -1;
@@ -55,26 +70,61 @@ public class Principal {
         }
     }
 
-
-    private void buscarLibroPorTitulo() {
+    private DatosLibro getDatosLibro(){
         System.out.println("Digite libro a buscar: ");
         var buscarLibro = teclado.nextLine();
+        DatosLibro datosLibro = null;
         try {
             String json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + buscarLibro.replace(" ", "%20"));
             DatosApi datosApi = convierteDatos.obtenerDatos(json, DatosApi.class);
-            System.out.println(datosApi.libros().get(0));
+            datosLibro = datosApi.libros().get(0);
         }catch (IndexOutOfBoundsException e){
             System.out.println("Libro no encontrado!!");
         }
+        return datosLibro;
+    }
+
+    private void buscarLibroPorTitulo() {
+        DatosLibro datosLibro = getDatosLibro();
+        if (datosLibro != null){
+            Libro libro = new Libro(datosLibro);
+            List<Autor> autores = datosLibro.autores().stream()
+                    .map(a -> new Autor(a))
+                    .collect(Collectors.toList());
+            libro.setAutores(autores);
+
+            try {
+                repositorio.save(libro);
+            }catch (DataIntegrityViolationException e){
+                System.out.println("El libro se encuentre registrado en la base de datos!!");
+            }
+        }
 
     }
+
     private void listarLibrosRegistrados() {
+        System.out.println(repositorio.findAll());
     }
+
     private void listarAutoresRegistrados() {
+        System.out.println(repositorio.findAllAutores());
     }
     private void listarAutoresVivosPorAño() {
+        System.out.println("Digite el año");
+        int anio = teclado.nextInt();
+        System.out.println(autorRepository.encontrarAutoresVivos(LocalDate.of(anio,1,1)));
     }
     private void listarLibrosPorIdioma() {
+        System.out.println("""
+                Digite el idioma:
+    
+                es - Español
+                en - Ingles
+                
+                """);
+
+        String idioma = teclado.nextLine();
+        System.out.println(repositorio.findByIdioma(idioma));
     }
 
 
